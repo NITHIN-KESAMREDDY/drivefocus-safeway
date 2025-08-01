@@ -127,8 +127,8 @@ export const Dashboard = ({ stats, currentTrip, recentTrips, onStartTrip, onView
         </Card>
       )}
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Enhanced Stats Overview */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -138,6 +138,23 @@ export const Dashboard = ({ stats, currentTrip, recentTrips, onStartTrip, onView
               </div>
               <div className="p-3 rounded-xl bg-primary/10">
                 <Car className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50 shadow-card hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Safe Streak</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-2xl font-bold text-accent">{stats.safeDrivingStreak}</p>
+                  {stats.safeDrivingStreak >= 5 && <Trophy className="h-4 w-4 text-accent" />}
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-accent/10">
+                <CheckCircle className="h-6 w-6 text-accent" />
               </div>
             </div>
           </CardContent>
@@ -161,7 +178,7 @@ export const Dashboard = ({ stats, currentTrip, recentTrips, onStartTrip, onView
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Average Risk</p>
+                <p className="text-sm text-muted-foreground">Risk Trend</p>
                 <div className="flex items-center gap-2">
                   <p className={`text-2xl font-bold ${getRiskColor(stats.averageRiskScore)}`}>
                     {Math.round(stats.averageRiskScore)}
@@ -180,6 +197,55 @@ export const Dashboard = ({ stats, currentTrip, recentTrips, onStartTrip, onView
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Insights */}
+      {stats.totalTrips > 0 && (
+        <Card className="border-accent/30 bg-gradient-to-r from-accent/5 to-accent/10">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-accent">
+              <Trophy className="h-5 w-5" />
+              Quick Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 rounded-lg bg-background/50">
+                <p className="text-sm text-muted-foreground">Risk Trend</p>
+                <div className="flex items-center justify-center gap-1 mt-1">
+                  {stats.riskTrend === 'improving' ? (
+                    <TrendingDown className="h-4 w-4 text-accent" />
+                  ) : stats.riskTrend === 'worsening' ? (
+                    <TrendingUp className="h-4 w-4 text-destructive" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full bg-muted-foreground" />
+                  )}
+                  <span className={`text-sm font-medium ${
+                    stats.riskTrend === 'improving' ? 'text-accent' : 
+                    stats.riskTrend === 'worsening' ? 'text-destructive' : 'text-muted-foreground'
+                  }`}>
+                    {stats.riskTrend.charAt(0).toUpperCase() + stats.riskTrend.slice(1)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-center p-4 rounded-lg bg-background/50">
+                <p className="text-sm text-muted-foreground">Most Risky Day</p>
+                <p className="text-sm font-medium mt-1">{stats.mostDistractiveDayOfWeek}</p>
+              </div>
+
+              <div className="text-center p-4 rounded-lg bg-background/50">
+                <p className="text-sm text-muted-foreground">Total Driving</p>
+                <p className="text-sm font-medium mt-1">
+                  {stats.totalDrivingTime < 1 
+                    ? `${Math.round(stats.totalDrivingTime * 60)}m`
+                    : `${stats.totalDrivingTime.toFixed(1)}h`
+                  }
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent Trips */}
       <Card className="border-border/50 shadow-card">

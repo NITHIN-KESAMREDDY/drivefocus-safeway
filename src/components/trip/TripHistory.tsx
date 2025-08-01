@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TripAnalytics } from '@/components/analytics/TripAnalytics';
 import { 
   ArrowLeft, 
   Car, 
@@ -13,7 +15,9 @@ import {
   Clock,
   Target,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  BarChart3,
+  List
 } from 'lucide-react';
 import { Trip, TripStats } from '@/types/trip';
 import { formatDuration, formatTime } from '@/lib/formatters';
@@ -87,153 +91,173 @@ export const TripHistory = ({ trips, stats, onBack, onViewTrip }: TripHistoryPro
         </div>
       </div>
 
-      {/* Filter Buttons */}
-      <div className="flex gap-2">
-        {['all', 'week', 'month'].map((filterOption) => (
-          <Button
-            key={filterOption}
-            variant={filter === filterOption ? 'primary' : 'outline'}
-            size="sm"
-            onClick={() => setFilter(filterOption as typeof filter)}
-          >
-            {filterOption === 'all' ? 'All Time' : 
-             filterOption === 'week' ? 'This Week' : 'This Month'}
-          </Button>
-        ))}
-      </div>
+      {/* Main Content with Tabs */}
+      <Tabs defaultValue="trips" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="trips" className="flex items-center gap-2">
+            <List className="h-4 w-4" />
+            Trip History
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-border/50 shadow-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Trips</p>
-                <p className="text-2xl font-bold">{stats.totalTrips}</p>
-              </div>
-              <Car className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="trips" className="space-y-6">
+          {/* Filter Buttons */}
+          <div className="flex gap-2">
+            {['all', 'week', 'month'].map((filterOption) => (
+              <Button
+                key={filterOption}
+                variant={filter === filterOption ? 'primary' : 'outline'}
+                size="sm"
+                onClick={() => setFilter(filterOption as typeof filter)}
+              >
+                {filterOption === 'all' ? 'All Time' : 
+                 filterOption === 'week' ? 'This Week' : 'This Month'}
+              </Button>
+            ))}
+          </div>
 
-        <Card className="border-border/50 shadow-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Average Risk Score</p>
-                <p className={`text-2xl font-bold ${getRiskColor(stats.averageRiskScore)}`}>
-                  {Math.round(stats.averageRiskScore)}
-                </p>
-              </div>
-              <Target className="h-8 w-8 text-accent" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50 shadow-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Weekly Trend</p>
-                <div className="flex items-center gap-2">
-                  <p className={`text-2xl font-bold ${weeklyTrend > 0 ? 'text-accent' : weeklyTrend < 0 ? 'text-destructive' : 'text-foreground'}`}>
-                    {Math.round(Math.abs(weeklyTrend))}%
-                  </p>
-                  {weeklyTrend > 0 ? (
-                    <TrendingDown className="h-5 w-5 text-accent" />
-                  ) : weeklyTrend < 0 ? (
-                    <TrendingUp className="h-5 w-5 text-destructive" />
-                  ) : null}
+          {/* Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="border-border/50 shadow-card">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Trips</p>
+                    <p className="text-2xl font-bold">{stats.totalTrips}</p>
+                  </div>
+                  <Car className="h-8 w-8 text-primary" />
                 </div>
-              </div>
-              <Calendar className="h-8 w-8 text-warning" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
 
-      {/* Trip List */}
-      <Card className="border-border/50 shadow-card">
-        <CardHeader>
-          <CardTitle>Your Trips</CardTitle>
-          <CardDescription>
-            {filteredTrips.length} trips • Click on a trip to view detailed analysis
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredTrips.length > 0 ? (
-            <div className="space-y-3">
-              {filteredTrips.map((trip) => {
-                const totalDistractionTime = trip.distractions.reduce((acc, d) => acc + d.duration, 0);
-                
-                return (
-                  <div
-                    key={trip.id}
-                    onClick={() => onViewTrip(trip)}
-                    className="flex items-center justify-between p-4 rounded-xl border border-border/50 hover:border-primary/30 hover:bg-muted/30 cursor-pointer transition-all duration-300 group"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-xl ${
-                        trip.riskScore <= 30 ? 'bg-accent/10' : 
-                        trip.riskScore <= 60 ? 'bg-warning/10' : 'bg-destructive/10'
-                      } group-hover:scale-110 transition-transform duration-300`}>
-                        {trip.riskScore <= 30 ? 
-                          <CheckCircle className="h-5 w-5 text-accent" /> :
-                          <AlertTriangle className={`h-5 w-5 ${trip.riskScore <= 60 ? 'text-warning' : 'text-destructive'}`} />
-                        }
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold">{formatTime(trip.startTime)}</p>
-                          <Badge variant={getRiskBadgeVariant(trip.riskScore)} className="text-xs">
-                            {trip.riskScore}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatDuration(trip.duration)}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {trip.distractions.length} distractions
-                          </div>
-                          {totalDistractionTime > 0 && (
-                            <div className="flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3" />
-                              {Math.round(totalDistractionTime / 60)}m distracted
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <div className={`text-lg font-bold ${getRiskColor(trip.riskScore)}`}>
-                        {trip.riskScore}
-                      </div>
-                      <div className="w-20 mt-1">
-                        <Progress value={trip.riskScore} className="h-1" />
-                      </div>
+            <Card className="border-border/50 shadow-card">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Average Risk Score</p>
+                    <p className={`text-2xl font-bold ${getRiskColor(stats.averageRiskScore)}`}>
+                      {Math.round(stats.averageRiskScore)}
+                    </p>
+                  </div>
+                  <Target className="h-8 w-8 text-accent" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 shadow-card">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Weekly Trend</p>
+                    <div className="flex items-center gap-2">
+                      <p className={`text-2xl font-bold ${weeklyTrend > 0 ? 'text-accent' : weeklyTrend < 0 ? 'text-destructive' : 'text-foreground'}`}>
+                        {Math.round(Math.abs(weeklyTrend))}%
+                      </p>
+                      {weeklyTrend > 0 ? (
+                        <TrendingDown className="h-5 w-5 text-accent" />
+                      ) : weeklyTrend < 0 ? (
+                        <TrendingUp className="h-5 w-5 text-destructive" />
+                      ) : null}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Car className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">No trips found</h3>
-              <p className="text-muted-foreground">
-                {filter === 'all' 
-                  ? 'Start your first trip to see data here!'
-                  : `No trips in the selected ${filter} period.`
-                }
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  <Calendar className="h-8 w-8 text-warning" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Trip List */}
+          <Card className="border-border/50 shadow-card">
+            <CardHeader>
+              <CardTitle>Your Trips</CardTitle>
+              <CardDescription>
+                {filteredTrips.length} trips • Click on a trip to view detailed analysis
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {filteredTrips.length > 0 ? (
+                <div className="space-y-3">
+                  {filteredTrips.map((trip) => {
+                    const totalDistractionTime = trip.distractions.reduce((acc, d) => acc + d.duration, 0);
+                    
+                    return (
+                      <div
+                        key={trip.id}
+                        onClick={() => onViewTrip(trip)}
+                        className="flex items-center justify-between p-4 rounded-xl border border-border/50 hover:border-primary/30 hover:bg-muted/30 cursor-pointer transition-all duration-300 group"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`p-3 rounded-xl ${
+                            trip.riskScore <= 30 ? 'bg-accent/10' : 
+                            trip.riskScore <= 60 ? 'bg-warning/10' : 'bg-destructive/10'
+                          } group-hover:scale-110 transition-transform duration-300`}>
+                            {trip.riskScore <= 30 ? 
+                              <CheckCircle className="h-5 w-5 text-accent" /> :
+                              <AlertTriangle className={`h-5 w-5 ${trip.riskScore <= 60 ? 'text-warning' : 'text-destructive'}`} />
+                            }
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-semibold">{formatTime(trip.startTime)}</p>
+                              <Badge variant={getRiskBadgeVariant(trip.riskScore)} className="text-xs">
+                                {trip.riskScore}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {formatDuration(trip.duration)}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                {trip.distractions.length} distractions
+                              </div>
+                              {totalDistractionTime > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  {Math.round(totalDistractionTime / 60)}m distracted
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${getRiskColor(trip.riskScore)}`}>
+                            {trip.riskScore}
+                          </div>
+                          <div className="w-20 mt-1">
+                            <Progress value={trip.riskScore} className="h-1" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Car className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No trips found</h3>
+                  <p className="text-muted-foreground">
+                    {filter === 'all' 
+                      ? 'Start your first trip to see data here!'
+                      : `No trips in the selected ${filter} period.`
+                    }
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <TripAnalytics stats={stats} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

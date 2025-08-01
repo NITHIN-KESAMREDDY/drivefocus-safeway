@@ -21,6 +21,22 @@ export interface TripStats {
   averageRiskScore: number;
   weeklyAverage: number;
   improvement: number; // percentage change
+  safeDrivingStreak: number; // consecutive trips with low risk
+  mostDistractiveDayOfWeek: string;
+  averageTripDuration: number; // in minutes
+  totalDrivingTime: number; // in hours
+  riskTrend: 'improving' | 'stable' | 'worsening';
+  monthlyStats: {
+    month: string;
+    averageRisk: number;
+    totalTrips: number;
+    totalDistractions: number;
+  }[];
+  timePatterns: {
+    hourOfDay: number;
+    averageRisk: number;
+    tripCount: number;
+  }[];
 }
 
 export interface User {
