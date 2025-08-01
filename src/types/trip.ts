@@ -44,22 +44,4 @@ export interface User {
   email: string;
   name: string;
   createdAt: Date;
-  avatar?: string;
-  phone?: string;
-  location?: string;
-  emergencyContact?: {
-    name: string;
-    phone: string;
-  };
-  preferences: {
-    theme: 'light' | 'dark' | 'auto';
-    notifications: boolean;
-    soundAlerts: boolean;
-    riskThreshold: number; // 0-100
-  };
-  drivingProfile: {
-    experienceLevel: 'beginner' | 'intermediate' | 'experienced';
-    vehicleType: string;
-    primaryRoutes: string[];
-  };
 }
