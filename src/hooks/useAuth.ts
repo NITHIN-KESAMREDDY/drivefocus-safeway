@@ -30,18 +30,7 @@ export const useAuth = () => {
         id: Date.now().toString(),
         email,
         name: email.split('@')[0],
-        createdAt: new Date(),
-        preferences: {
-          theme: 'dark',
-          notifications: true,
-          soundAlerts: true,
-          riskThreshold: 70
-        },
-        drivingProfile: {
-          experienceLevel: 'intermediate',
-          vehicleType: '',
-          primaryRoutes: []
-        }
+        createdAt: new Date()
       };
       
       setUser(newUser);
@@ -66,18 +55,7 @@ export const useAuth = () => {
         id: Date.now().toString(),
         email,
         name,
-        createdAt: new Date(),
-        preferences: {
-          theme: 'dark',
-          notifications: true,
-          soundAlerts: true,
-          riskThreshold: 70
-        },
-        drivingProfile: {
-          experienceLevel: 'intermediate',
-          vehicleType: '',
-          primaryRoutes: []
-        }
+        createdAt: new Date()
       };
       
       setUser(newUser);
@@ -96,18 +74,12 @@ export const useAuth = () => {
     localStorage.removeItem('drivefocus-trips');
   };
 
-  const updateUser = (updatedUser: User) => {
-    setUser(updatedUser);
-    localStorage.setItem('drivefocus-user', JSON.stringify(updatedUser));
-  };
-
   return {
     user,
     isLoading,
     login,
     signup,
     logout,
-    updateUser,
     isAuthenticated: !!user
   };
 };

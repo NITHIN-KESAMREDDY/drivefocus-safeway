@@ -4,14 +4,12 @@ import { Dashboard } from '@/components/dashboard/Dashboard';
 import { TripTracker } from '@/components/trip/TripTracker';
 import { TripReview } from '@/components/trip/TripReview';
 import { TripHistory } from '@/components/trip/TripHistory';
-import { UserProfile } from '@/components/profile/UserProfile';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrip } from '@/hooks/useTrip';
 import { Trip } from '@/types/trip';
 import { LogOut, History, User } from 'lucide-react';
-type ViewState = 'dashboard' | 'trip-active' | 'trip-review' | 'trip-history' | 'profile';
+type ViewState = 'dashboard' | 'trip-active' | 'trip-review' | 'trip-history';
 export const DriveFocusApp = () => {
   const {
     user,
@@ -19,7 +17,6 @@ export const DriveFocusApp = () => {
     login,
     signup,
     logout,
-    updateUser,
     isAuthenticated
   } = useAuth();
   const {
@@ -84,24 +81,17 @@ export const DriveFocusApp = () => {
 
   // Navigation header for authenticated views
   const renderHeader = () => {
-    if (view === 'trip-active' || view === 'trip-review' || view === 'trip-history' || view === 'profile') {
+    if (view === 'trip-active' || view === 'trip-review' || view === 'trip-history') {
       return null; // These views handle their own headers
     }
     return <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
-        <div className="flex items-center justify-between p-4 bg-primary/10 rounded-none">
-          <Button
-            variant="ghost"
-            className="flex items-center gap-2 p-2"
-            onClick={() => setView('profile')}
-          >
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={user?.avatar} />
-              <AvatarFallback className="text-xs bg-primary/20 text-primary">
-                {user?.name.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
+        <div className="flex items-center justify-between p-4 bg-sky-300 rounded-none">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+              <User className="h-4 w-4 text-primary-foreground" />
+            </div>
             <span className="font-medium">{user?.name}</span>
-          </Button>
+          </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={() => setView('trip-history')}>
               <History className="h-5 w-5" />
@@ -132,9 +122,6 @@ export const DriveFocusApp = () => {
         return <TripReview trip={selectedTrip} onBack={handleBack} allTrips={trips} />;
       case 'trip-history':
         return <TripHistory trips={trips} stats={stats} onBack={handleBack} onViewTrip={handleViewTrip} />;
-      case 'profile':
-        if (!user) return null;
-        return <UserProfile user={user} onBack={handleBack} onUpdateUser={updateUser} />;
       default:
         return <div className="pt-20">
             <Dashboard stats={stats} currentTrip={currentTrip} recentTrips={recentTrips} onStartTrip={handleStartTrip} onViewTrip={handleViewTrip} />
